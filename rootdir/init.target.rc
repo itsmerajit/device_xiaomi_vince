@@ -208,11 +208,26 @@ on property:init.svc.per_mgr=running
 on property:sys.shutdown.requested=*
     stop per_proxy
 
-service energy-awareness /system/bin/energy-awareness
-    class main
-    user root
-    group system
-    oneshot
+service fingerprintd /system/bin/fingerprintd
+    class late_start
+    user system
+    group system sdcard_rw
+    system system
+    writepid /dev/cpuset/system-background/tasks
+
+service goodixfingerprintd /system/bin/goodixfingerprintd
+    class late_start
+    user system
+    group system sdcard_rw
+    seclabel u:r:goodixfingerprintd:s0
+    disabled
+    writepid /dev/cpuset/system-background/tasks
+
+on property:persist.sys.fp.goodix=0
+    stop goodixfingerprintd
+
+on property:persist.sys.fp.goodix=1
+    start goodixfingerprintd
 
 on boot
 	write /dev/cpuset/top-app/cpus 0-7
